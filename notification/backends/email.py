@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext
 
@@ -15,7 +15,7 @@ class EmailBackend(backends.BaseBackend):
             return True
         return False
 
-    def deliver(self, recipient, sender, notice_type, extra_context):
+    def deliver(self, recipient, sender, notice_type, extra_context, attachments=None):
         # TODO: require this to be passed in extra_context
 
         context = self.default_context()
@@ -39,4 +39,24 @@ class EmailBackend(backends.BaseBackend):
             "message": messages["full.txt"],
         }, context)
 
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient.email])
+        # create message
+        message = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[recipient.email],
+        )
+
+        # attach files if required
+        if attachments is not None:
+            for attachment in attachments:
+                try:
+                    message.attach_file(attachment)
+                except Exception, ex:
+                    logging.error(
+                        u"deliver(): Cannot attach file: %s" % attachment)
+
+        # send
+        message.send()
+
+

@@ -133,7 +133,7 @@ def get_notification_language(user):
     raise LanguageStoreNotAvailable
 
 
-def send_now(users, label, extra_context=None, sender=None):
+def send_now(users, label, extra_context=None, sender=None, attachments=None):
     """
     Creates a new notice.
 
@@ -166,7 +166,7 @@ def send_now(users, label, extra_context=None, sender=None):
 
         for backend in NOTIFICATION_BACKENDS.values():
             if backend.can_send(user, notice_type):
-                backend.deliver(user, sender, notice_type, extra_context)
+                backend.deliver(user, sender, notice_type, extra_context, attachments)
                 sent = True
 
     # reset environment to original language

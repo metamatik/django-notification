@@ -29,14 +29,14 @@ Here is an example::
     from django.conf import settings
     from django.db.models import signals
     from django.utils.translation import ugettext_noop as _
-    
+
     if "notification" in settings.INSTALLED_APPS:
         from notification import models as notification
-        
+
         def create_notice_types(app, created_models, verbosity, **kwargs):
             notification.create_notice_type("friends_invite", _("Invitation Received"), _("you have received an invitation"))
             notification.create_notice_type("friends_accept", _("Acceptance Received"), _("an invitation you sent has been accepted"))
-            
+
         signals.post_syncdb.connect(create_notice_types, sender=notification)
     else:
         print "Skipping creation of NoticeTypes as notification app not found"
@@ -62,14 +62,14 @@ Each of these should be put in a directory on the template path called ``notific
 If any of these are missing, a default would be used. In practice, ``notice.html`` and ``full.txt`` should be provided at a minimum.
 
 For example, ``notification/friends_invite/notice.html`` might contain::
-    
+
     {% load i18n %}{% url invitations as invitation_page %}{% url profile_detail username=invitation.from_user.username as user_url %}
     {% blocktrans with invitation.from_user as invitation_from_user %}<a href="{{ user_url }}">{{ invitation_from_user }}</a> has requested to add you as a friend (see <a href="{{ invitation_page }}">invitations</a>){% endblocktrans %}
 
 and ``notification/friends/full.txt`` might contain::
-    
+
     {% load i18n %}{% url invitations as invitation_page %}{% blocktrans with invitation.from_user as invitation_from_user %}{{ invitation_from_user }} has requested to add you as a friend. You can accept their invitation at:
-    
+
     http://{{ current_site }}{{ invitation_page }}
     {% endblocktrans %}
 
@@ -88,7 +88,7 @@ simple way to send out a notification, for example::
 One thing to note is that ``send`` is a proxy around either ``send_now`` or
 ``queue``. They all have the same signature::
 
-    send(users, label, extra_context)
+    send(users, label, extra_context, attachments)
 
 The parameters are:
 
@@ -97,6 +97,9 @@ The parameters are:
    type.
  * ``extra_content`` is a dictionary to add custom context entries to the
    template used to render to notification. This is optional.
+ * ``attachments`` is a list of files to attach to the notification email.
+   This is optional.
+
 
 ``send_now`` vs. ``queue`` vs. ``send``
 ---------------------------------------
